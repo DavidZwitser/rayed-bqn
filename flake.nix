@@ -22,9 +22,9 @@
 
         buildPhase = /*bash*/ ''
           # Overwriting the default raylib loading
-          echo "raylibheaderpath ⇐ •file.At \"${raylib}/include/raylib.h\"" > ./config.bqn
-          echo "rayliblibpath ⇐ •file.At \"${raylib}/lib/libraylib.dylib\"" >> ./config.bqn
-          echo "⟨raylibheaderpath ⋄ rayliblibpath⟩ ⇐ •Import \"../config.bqn\"" > ./src/loadConfig.bqn
+          echo "raylibheaderpath ⇐ •file.At \"${raylib}/include/raylib.h\"" > $src/config.bqn
+          echo "rayliblibpath ⇐ •file.At \"${raylib}/lib/libraylib.dylib\"" >> $src/config.bqn
+          echo "⟨raylibheaderpath ⋄ rayliblibpath⟩ ⇐ •Import \"../config.bqn\"" > $src/src/loadConfig.bqn
         '';
 
         installPhase = /*bash*/ ''
