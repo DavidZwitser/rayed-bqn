@@ -27,7 +27,8 @@
         cp -r ./imports $out
 
         mkdir -p $out/lib
-        ln -sf ${pkgs.raylib}/lib/libraylib.${if pkgs.stdenv.isLinux then "so" else "dylib"} $out/lib
+        ln -sf ${pkgs.raylib}/lib/libraylib.so $out/lib
+        ln -sf ${pkgs.raylib}/lib/libraylib.dylib $out/lib
       '' ;
 
       # genExamples = f: builtins.mapAttrs (name: value: f [name value]) {
