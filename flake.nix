@@ -10,61 +10,71 @@
     flake-utils.lib.eachDefaultSystem (system:
     let
       packageVersion = "0.1.0";
-      revision = "1454488e5384f8e436844ac62ad4014ad3a1749c";
+      # revision = "1454488e5384f8e436844ac62ad4014ad3a1749c";
 
       # Fetching this repo itself to load its submodules
       rayedBqn = builtins.fetchGit {
         url = "https://github.com/DavidZwitser/rayed-bqn.git";
-        rev = revision;
+        # rev = revision;
+        ref = "master";
         submodules = true;
       };
       pkgs = nixpkgs.legacyPackages.${system};
 
-      basicBuild = ''
-        mkdir -p $out
-        cp rayed.bqn $out
-        cp -r ./src $out
-        cp -r ./imports $out
+      default = pkgs.stdenv.mkDerivation {
+        pname = "RayedBQN";
+        version = packageVersion;
+        src = rayedBqn;
+        buildPhase = ''
+          mkdir -p $out
+          cp rayed.bqn $out
+          cp -r ./src $out
+          cp -r ./imports $out
 
-        mkdir -p $out/lib
-        ln -sf ${pkgs.raylib}/lib/libraylib.so $out/lib
-        ln -sf ${pkgs.raylib}/lib/libraylib.dylib $out/lib
-      '' ;
+          mkdir -p $out/lib
+          ln -sf ${pkgs.raylib}/lib/libraylib.so $out/lib || true
+          ln -sf ${pkgs.raylib}/lib/libraylib.dylib $out/lib || true
+        '';
+      };
 
-      # genExamples = f: builtins.mapAttrs (name: value: f [name value]) {
-      #   colorFrenzy = "1_shapes/colorFrenzy.bqn"
-      # }
+      examplesToUse = {
+        ColorFrenzy = "1_shapes/colorFrenzy.bqn";
+        SnakeGame = "4_snakeGame/snake.bqn";
+        REPL = "9_repl/repl.bqn";
+      };
+
+      examplePackages = builtins.mapAttrs (name: path: pkgs.stdenv.mkDerivation {
+        pname = name;
+        version = packageVersion;
+        src = rayedBqn;
+        buildPhase = ''
+          mkdir -p $out
+          cp rayed.bqn $out
+          cp -r ./src $out
+          cp -r ./imports $out
+
+          mkdir -p $out/lib
+          ln -sf ${pkgs.raylib}/lib/libraylib.so $out/lib || true
+          ln -sf ${pkgs.raylib}/lib/libraylib.dylib $out/lib || true
+
+          cp -r ./examples $out
+
+          mkdir -p $out/bin
+          echo "#!/bin/bash" > $out/bin/${name}
+          echo "${pkgs.cbqn-replxx}/bin/cbqn $out/examples/${path}" >> $out/bin/${name}
+          chmod +x $out/bin/${name}
+        '';
+      }) examplesToUse;
+
+      exampleApps = builtins.mapAttrs (name: path: {
+        type = "app";
+        program = "${self.packages.${system}.${name}}/bin/${name}";
+      }) examplesToUse;
+
     in {
 
-    packages.default = pkgs.stdenv.mkDerivation {
-      pname = "RayedBQN";
-      version = packageVersion;
-      src = rayedBqn;
-
-      buildPhase = basicBuild;
-    };
-
-    packages.example = pkgs.stdenv.mkDerivation {
-      pname = "RayedBQN";
-      version = "0.1.0";
-      src = rayedBqn;
-
-      buildInputs = [ pkgs.cbqn-replxx pkgs.git ];
-
-      buildPhase = basicBuild ++ ''
-        cp -r ./examples $out
-
-        mkdir -p $out/bin
-        echo "#!/bin/bash" > $out/bin/rayed-bqn
-        echo "${pkgs.cbqn-replxx}/bin/cbqn $out/examples/1_shapes/colorFrenzy.bqn" >> $out/bin/rayed-bqn
-        chmod +x $out/bin/rayed-bqn
-      '';
-    };
-
-    apps.example =  {
-      type = "app";
-      program = "${self.packages.${system}.example}/bin/rayed-bqn";
-    };
+    packages = examplePackages // {default = default;};
+    apps = exampleApps;
 
   });
 }
