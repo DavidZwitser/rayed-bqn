@@ -27,8 +27,12 @@
         cp -r ./imports $out
 
         mkdir -p $out/lib
-        ln -sf ${pkgs.raylib}/lib/libraylib.dylib $out/lib
-      '';
+        ln -sf ${pkgs.raylib}/lib/libraylib.${if pkgs.stdenv.isLinux then "so" else "dylib"} $out/lib
+      '' ;
+
+      # genExamples = f: builtins.mapAttrs (name: value: f [name value]) {
+      #   colorFrenzy = "1_shapes/colorFrenzy.bqn"
+      # }
     in {
 
     packages.default = pkgs.stdenv.mkDerivation {
@@ -36,7 +40,6 @@
       version = packageVersion;
       src = rayedBqn;
 
-      buildInputs = [ pkgs.cbqn-replxx pkgs.git ];
       buildPhase = basicBuild;
     };
 
