@@ -10,11 +10,11 @@
     flake-utils.lib.eachDefaultSystem (system:
     let
       packageVersion = "0.1.0";
-      revision = "248122f1685281a66e479aa01fed744cdfc43533";
+      revision = "e6acb24a2831f583e5ed6562790c61163756c642";
 
       # Fetching this repo itself to load its submodules
       rayedBqn = builtins.fetchGit {
-        url = "https://github.com/Brian-ED/rayed-bqn.git";
+        url = "https://github.com/DavidZwitser/rayed-bqn.git";
         rev = revision;
         submodules = true;
       };
