@@ -12,3 +12,6 @@
 
 # hide editor files
 /.vscode
+
+result
+.direnv
